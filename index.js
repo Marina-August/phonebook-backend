@@ -36,7 +36,7 @@ const logFormat = ':method :url :status :res[content-length] - :response-time ms
 
 app.use(morgan(logFormat));
 
-app.get('/api/persons', (response) => {
+app.get('/api/persons', (request,response) => {
   Person.find({}).then(persons => {
     response.json(persons)
   })
@@ -44,7 +44,7 @@ app.get('/api/persons', (response) => {
 
 const date = new Date();
 
-app.get('/info', (response) => {
+app.get('/info', (request,response) => {
   Person.find({}).then(persons => {
     response.send(`<div>
                     <p>Phonebook has info for ${persons.length} people</p>
