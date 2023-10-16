@@ -9,13 +9,16 @@ const app = express()
 
 
 const errorHandler = (error, request, response, next) => {
-  console.error(error.message)
-
+  console.log(request.body.name)
+ 
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
   }
   else if (error.name === 'ValidationError') {
     return response.status(400).json({ error: error.message})
+  }
+  else if (error.message === `Information of ${request.body.name} has already been removed from server.`) {
+    return response.status(404).json({ error: error.message})
   }
   next(error)
 }
@@ -107,6 +110,12 @@ app.put('/api/persons/:id', (request, response, next) => {
 
   Person.findByIdAndUpdate(request.params.id, person, { new: true, runValidators: true, context: 'query' })
     .then(updatedPerson => {
+      
+      console.log(body.name);
+      // if object was deleted
+      if (!updatedPerson) {
+        next(Error (`Information of ${body.name} has already been removed from server.`))
+      }
       response.json(updatedPerson)
     })
     .catch(error => next(error))
