@@ -9,16 +9,14 @@ const app = express()
 
 
 const errorHandler = (error, request, response, next) => {
-  console.log(request.body.name)
- 
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
   }
   else if (error.name === 'ValidationError') {
-    return response.status(400).json({ error: error.message})
+    return response.status(400).json({ error: error.message })
   }
   else if (error.message === `Information of ${request.body.name} has already been removed from server.`) {
-    return response.status(404).json({ error: error.message})
+    return response.status(404).json({ error: error.message })
   }
   next(error)
 }
@@ -27,9 +25,9 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static('dist'))
 
-morgan.token('postData', (req, res) => {
+morgan.token('postData', (req) => {
   if (req.method === 'POST') {
-      return JSON.stringify(req.body);
+    return JSON.stringify(req.body);
   }
   return '-';
 });
@@ -38,7 +36,7 @@ const logFormat = ':method :url :status :res[content-length] - :response-time ms
 
 app.use(morgan(logFormat));
 
-app.get('/api/persons', (request, response) => {
+app.get('/api/persons', (response) => {
   Person.find({}).then(persons => {
     response.json(persons)
   })
@@ -46,9 +44,9 @@ app.get('/api/persons', (request, response) => {
 
 const date = new Date();
 
-app.get('/info', (request, response) => {
+app.get('/info', (response) => {
   Person.find({}).then(persons => {
-   response.send(`<div>
+    response.send(`<div>
                     <p>Phonebook has info for ${persons.length} people</p>
                     <p> ${date}</p> 
                  </div>`)
@@ -68,22 +66,12 @@ app.get('/api/persons/:id', (request, response, next) => {
 })
 
 app.delete('/api/persons/:id', (request, response, next) => {
-  const id = Number(request.params.id)
-
   Person.findByIdAndRemove(request.params.id)
-    .then(result => {
+    .then(() => {
       response.status(204).end()
     })
     .catch(error => next(error))
 })
-
-const generateId = ()=>{
-  let id = 0;
-  do{
-    id = Math.random();
-  } while (persons.some(person => person.id === id))
-  return id;
-}
 
 app.post('/api/persons', (request, response, next) => {
   const body = request.body
@@ -95,7 +83,7 @@ app.post('/api/persons', (request, response, next) => {
   })
   person.save()
     .then(savedPerson => {
-    response.json(savedPerson)
+      response.json(savedPerson)
     })
     .catch(error => next(error))
 })
@@ -110,7 +98,6 @@ app.put('/api/persons/:id', (request, response, next) => {
 
   Person.findByIdAndUpdate(request.params.id, person, { new: true, runValidators: true, context: 'query' })
     .then(updatedPerson => {
-      
       console.log(body.name);
       // if object was deleted
       if (!updatedPerson) {
